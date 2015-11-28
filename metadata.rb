@@ -2,6 +2,6 @@ name 'topo'
 maintainer 'ThirdWave Insights, LLC'
 maintainer_email 'christine_draper@thirdwaveinsights.com'
 license 'Apache 2.0'
-description 'Installs/Configures topo'
-long_description 'Installs/Configures topo'
+description 'Sets node configuration from a data bag'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version '0.1.0'
