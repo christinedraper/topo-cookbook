@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe 'topo::default' do
+describe 'topo::setup_node' do
   # Serverspec examples can be found at
   # http://serverspec.org/resource_types.html
-  it 'does something' do
-    skip 'Replace this with meaningful tests'
+  it 'converges using test1 topology' do
+    skip 'Should have set runlist to include test1 cookbook'
   end
 end

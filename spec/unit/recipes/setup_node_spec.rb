@@ -21,8 +21,19 @@ topo1 = {
   'name' => 'test',
   'id' => 'test',
   'nodes' => [{
+    'name' => 'node1',
+    'attributes' => { 
+      'topo' => { 'node_type' => 'appserver' }
+    },
+    'tags' => ['tag2'],
+    'run_list' => ['recipe[appserver]']
+  },
+  {
     'name' => 'chefspec',
-    'normal' => { 'topo' => { 'node_type' => 'dbserver' } },
+    'normal' => { 
+      'topo' => { 'node_type' => 'dbserver' }, 
+      'testapp' => { 'version' => '0.1.1'}  
+    },
     'tags' => ['tag3'],
     'run_list' => ['recipe[apt]'],
     'chef_environment' => 'test'
@@ -35,13 +46,27 @@ topo2 = {
   'name' => 'test',
   'id' => 'test',
   'tags' => %w(tag1 tag2),
+  'attributes' => {
+    'testapp' => { 'version' => '0.1.3'}
+  },
+  'chef_environment' => 'test',
   'nodes' => [{
     'name' => 'node1',
-    'normal' => { 'topo' => { 'node_type' => 'appserver' } },
+    'attributes' => { 
+      'topo' => { 'node_type' => 'appserver' }
+    },
     'tags' => ['tag3'],
-    'run_list' => ['recipe[apt]'],
-    'chef_environment' => 'test'
-  }]
+    'run_list' => ['recipe[apt]']
+  },
+  {
+      'name' => 'node2',
+      'attributes' => { 
+        'topo' => { 'node_type' => 'dbserver' }
+      },
+      'tags' => ['tag4'],
+      'run_list' => ['recipe[db]']
+    }
+  ]
 }
 topo2_item =  Chef::DataBagItem.from_hash(topo2)
 
@@ -60,7 +85,8 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'node_type' => 'dbserver' },
+          'topo' => { 'name' => 'test',  'node_type' => 'dbserver' },
+          'testapp' => { 'version' => '0.1.1'},
           'tags' => ['tag3']
         },
         'run_list' => ['recipe[apt]']
@@ -91,7 +117,8 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'node_type' => 'appserver' },
+          'topo' => { 'name' => 'test',  'node_type' => 'appserver' },
+          'testapp' => { 'version' => '0.1.3'},
           'tags' => %w(tag3 tag1 tag2)
         },
         'run_list' => ['recipe[apt]']

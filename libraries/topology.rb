@@ -21,6 +21,8 @@ class Topo
   # Handle topology data from data bag item
   class Topology
     @topos = {}
+      
+    attr_reader :name
 
     # class method to get or create Topo instance
     def self.get_topo(topo_name, blueprint_name = nil,
@@ -51,22 +53,42 @@ class Topo
     end
 
     def initialize(topo_name, raw_data)
-      @topo_name = topo_name
+      @name = topo_name
       @raw_data = raw_data
       @nodes = []
       @chef_environment = @raw_data['chef_environment']
       @tags = @raw_data['tags']
       @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
+      @attributes['topo'] ||= {}
+      @attributes['topo']['name'] = @name
       @raw_data['nodes'].each do |node_data|
-        node = Topo::Node.new(inflate!(node_data))
+        node = Topo::Node.new(inflate(node_data))
         @nodes << node
       end if @raw_data['nodes']
+    end
+    
+    # recursive merge that retains all keys
+    def prop_merge(hash, other_hash)
+      other_hash.each do |key, val|
+        if val.kind_of?(Hash) && hash[key]
+          prop_merge(hash[key], val)
+        else
+          hash[key] = val
+        end
+      end
+      
+      hash
     end
 
     # Expand each node in the JSON to contain a complete definition,
     # taking defaults from topology where not defined in the node json
-    def inflate!(node_data)
+    def inflate(node_data)
       node_data['chef_environment'] ||= @chef_environment if @chef_environment
+      attrs = node_data['attributes'] || node_data['normal'] || {}
+      node_data['attributes'] = prop_merge(
+        Marshal.load(Marshal.dump(@attributes)),
+        attrs
+      )
       if @tags
         node_data['tags'] ||= []
         node_data['tags'] |= @tags

@@ -57,7 +57,7 @@ blueprint = node['topo']['blueprint_name']
 topo = Topo::Topology.get_topo(topo_name, blueprint)
 
 if topo
-  topo_node = topo.get_node(node.name, node_type)
+  topo_node = topo.get_node(node.name, node_type) 
 
   if topo_node
     chef_node node.name do
@@ -70,11 +70,11 @@ if topo
     looked_for = "node #{node.name}"
     looked_for << " or node type '#{node_type}'" if node_type
     Chef::Log.warn(
-      "Unable to find #{looked_for} in topology '#{topo_name}' \\
-        so cannot configure node")
+      "Unable to find #{looked_for} in topology '#{topo.name}' \
+ so cannot configure node")
   end
 
 else
   Chef::Log.warn(
-    "Unable to find topology '#{topo_name}' so cannot configure node")
+    "Unable to find topology '#{topo.name}' so cannot configure node")
 end
