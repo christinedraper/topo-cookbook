@@ -57,7 +57,7 @@ blueprint = node['topo']['blueprint_name']
 topo = Topo::Topology.get_topo(topo_name, blueprint)
 
 if topo
-  topo_node = topo.get_node(node.name, node_type) 
+  topo_node = topo.get_node(node.name, node_type)
 
   if topo_node
     chef_node node.name do

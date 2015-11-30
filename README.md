@@ -10,6 +10,7 @@ provisioning tools.
 #Usage
 
 Upload a topology definition to the Chef Server using knife-topo:
+
 ```
 knife topo import test1.json
 knife topo create test1

@@ -20,24 +20,26 @@ require 'spec_helper'
 topo1 = {
   'name' => 'test',
   'id' => 'test',
-  'nodes' => [{
-    'name' => 'node1',
-    'attributes' => { 
-      'topo' => { 'node_type' => 'appserver' }
+  'nodes' => [
+    {
+      'name' => 'node1',
+      'attributes' => {
+        'topo' => { 'node_type' => 'appserver' }
+      },
+      'tags' => ['tag2'],
+      'run_list' => ['recipe[appserver]']
     },
-    'tags' => ['tag2'],
-    'run_list' => ['recipe[appserver]']
-  },
-  {
-    'name' => 'chefspec',
-    'normal' => { 
-      'topo' => { 'node_type' => 'dbserver' }, 
-      'testapp' => { 'version' => '0.1.1'}  
-    },
-    'tags' => ['tag3'],
-    'run_list' => ['recipe[apt]'],
-    'chef_environment' => 'test'
-  }]
+    {
+      'name' => 'chefspec',
+      'normal' => {
+        'topo' => { 'node_type' => 'dbserver' },
+        'testapp' => { 'version' => '0.1.1' }
+      },
+      'tags' => ['tag3'],
+      'run_list' => ['recipe[apt]'],
+      'chef_environment' => 'test'
+    }
+  ]
 }
 
 topo1_item =  Chef::DataBagItem.from_hash(topo1)
@@ -47,20 +49,21 @@ topo2 = {
   'id' => 'test',
   'tags' => %w(tag1 tag2),
   'attributes' => {
-    'testapp' => { 'version' => '0.1.3'}
+    'testapp' => { 'version' => '0.1.3' }
   },
   'chef_environment' => 'test',
-  'nodes' => [{
-    'name' => 'node1',
-    'attributes' => { 
-      'topo' => { 'node_type' => 'appserver' }
+  'nodes' => [
+    {
+      'name' => 'node1',
+      'attributes' => {
+        'topo' => { 'node_type' => 'appserver' }
+      },
+      'tags' => ['tag3'],
+      'run_list' => ['recipe[apt]']
     },
-    'tags' => ['tag3'],
-    'run_list' => ['recipe[apt]']
-  },
-  {
+    {
       'name' => 'node2',
-      'attributes' => { 
+      'attributes' => {
         'topo' => { 'node_type' => 'dbserver' }
       },
       'tags' => ['tag4'],
@@ -86,7 +89,7 @@ describe 'topo::setup_node' do
         'chef_environment' => 'test',
         'attributes' => {
           'topo' => { 'name' => 'test',  'node_type' => 'dbserver' },
-          'testapp' => { 'version' => '0.1.1'},
+          'testapp' => { 'version' => '0.1.1' },
           'tags' => ['tag3']
         },
         'run_list' => ['recipe[apt]']
@@ -118,7 +121,7 @@ describe 'topo::setup_node' do
         'chef_environment' => 'test',
         'attributes' => {
           'topo' => { 'name' => 'test',  'node_type' => 'appserver' },
-          'testapp' => { 'version' => '0.1.3'},
+          'testapp' => { 'version' => '0.1.3' },
           'tags' => %w(tag3 tag1 tag2)
         },
         'run_list' => ['recipe[apt]']

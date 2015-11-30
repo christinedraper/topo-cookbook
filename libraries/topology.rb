@@ -21,7 +21,7 @@ class Topo
   # Handle topology data from data bag item
   class Topology
     @topos = {}
-      
+
     attr_reader :name
 
     # class method to get or create Topo instance
@@ -58,25 +58,28 @@ class Topo
       @nodes = []
       @chef_environment = @raw_data['chef_environment']
       @tags = @raw_data['tags']
-      @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
-      @attributes['topo'] ||= {}
-      @attributes['topo']['name'] = @name
+      initialize_attrs
       @raw_data['nodes'].each do |node_data|
         node = Topo::Node.new(inflate(node_data))
         @nodes << node
       end if @raw_data['nodes']
     end
-    
+
+    def initialize_attrs
+      @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
+      @attributes['topo'] ||= {}
+      @attributes['topo']['name'] = @name
+    end
+
     # recursive merge that retains all keys
     def prop_merge(hash, other_hash)
       other_hash.each do |key, val|
-        if val.kind_of?(Hash) && hash[key]
+        if val.is_a?(Hash) && hash[key]
           prop_merge(hash[key], val)
         else
           hash[key] = val
         end
       end
-      
       hash
     end
 
@@ -85,10 +88,8 @@ class Topo
     def inflate(node_data)
       node_data['chef_environment'] ||= @chef_environment if @chef_environment
       attrs = node_data['attributes'] || node_data['normal'] || {}
-      node_data['attributes'] = prop_merge(
-        Marshal.load(Marshal.dump(@attributes)),
-        attrs
-      )
+      node_data['attributes'] =
+        prop_merge(Marshal.load(Marshal.dump(@attributes)), attrs)
       if @tags
         node_data['tags'] ||= []
         node_data['tags'] |= @tags
