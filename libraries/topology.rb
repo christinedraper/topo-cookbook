@@ -58,17 +58,11 @@ class Topo
       @nodes = []
       @chef_environment = @raw_data['chef_environment']
       @tags = @raw_data['tags']
-      initialize_attrs
+      @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
       @raw_data['nodes'].each do |node_data|
         node = Topo::Node.new(inflate(node_data))
         @nodes << node
       end if @raw_data['nodes']
-    end
-
-    def initialize_attrs
-      @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
-      @attributes['topo'] ||= {}
-      @attributes['topo']['name'] = @name
     end
 
     # recursive merge that retains all keys
@@ -87,14 +81,22 @@ class Topo
     # taking defaults from topology where not defined in the node json
     def inflate(node_data)
       node_data['chef_environment'] ||= @chef_environment if @chef_environment
-      attrs = node_data['attributes'] || node_data['normal'] || {}
-      node_data['attributes'] =
-        prop_merge(Marshal.load(Marshal.dump(@attributes)), attrs)
+      node_data['attributes'] =  inflate_attrs(node_data)
       if @tags
         node_data['tags'] ||= []
         node_data['tags'] |= @tags
       end
       node_data
+    end
+
+    def inflate_attrs(node_data)
+      attrs = node_data['attributes'] || node_data['normal'] || {}
+      attrs['topo'] ||= {}
+      attrs['topo']['name'] = @name
+      prop_merge(
+        Marshal.load(Marshal.dump(@attributes)),
+        attrs
+      )
     end
 
     def get_node(name, type = nil)

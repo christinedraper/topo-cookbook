@@ -75,6 +75,8 @@ if topo
   end
 
 else
+  looked_for = "topology #{topo_name}"
+  looked_for << " or blueprint '#{blueprint}'" if blueprint
   Chef::Log.warn(
-    "Unable to find topology '#{topo.name}' so cannot configure node")
+    "Unable to find #{looked_for} so cannot configure node")
 end

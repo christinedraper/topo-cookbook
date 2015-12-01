@@ -128,4 +128,28 @@ describe 'topo::setup_node' do
       )
     end
   end
+  
+  context 'When there is no matching data bag' do
+    let(:response_404) { OpenStruct.new(code: '404') }
+    let(:exception_404) do
+      Net::HTTPServerException.new('404 not found', response_404)
+    end
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new
+      runner.node.set['topo']['name'] = 'test2'
+      runner.node.set['topo']['blueprint_name'] = 'test'
+      runner.node.set['topo']['node_type'] = 'appserver'
+      expect(Chef::DataBagItem).to receive(:load).with(
+        'topologies',
+        'test2').and_raise(exception_404)
+      expect(Chef::DataBagItem).to receive(:load).with(
+        'topologies',
+        'test').and_raise(exception_404)
+      runner.converge(described_recipe)
+    end
+
+    it 'does not raise an error' do
+      expect{ chef_run  }.to_not raise_error
+    end
+  end
 end
