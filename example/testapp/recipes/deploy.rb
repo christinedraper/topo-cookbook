@@ -6,9 +6,9 @@
 #
 #
 
-user = node['testapp']['user'] 
-appname = node['testapp']['appname'] 
-basepath = node['testapp']['path'] 
+user = node['testapp']['user']
+appname = node['testapp']['appname']
+basepath = node['testapp']['path']
 fullpath = ::File.join(basepath, appname)
 
 directory fullpath do
@@ -18,18 +18,18 @@ directory fullpath do
   action :create
 end
 
-cookbook_file ::File.join(fullpath, "server.js") do
-  source 'server.js' 
+cookbook_file ::File.join(fullpath, 'server.js') do
+  source 'server.js'
   owner user
 end
 
-cookbook_file ::File.join(fullpath, "package.json") do
-  source 'package.json' 
+cookbook_file ::File.join(fullpath, 'package.json') do
+  source 'package.json'
   owner user
 end
 
-cookbook_file ::File.join(fullpath, "index.html") do
-  source 'index.html'  
+cookbook_file ::File.join(fullpath, 'index.html') do
+  source 'index.html'
   owner user
 end
 
@@ -38,20 +38,20 @@ execute 'install_testapp' do
   command "su -l -c 'cd #{fullpath} && npm install' #{user}"
 end
 
-template "testapp.upstart.conf" do
-  path ::File.join("/etc/init", appname + ".conf")
+template 'testapp.upstart.conf' do
+  path ::File.join('/etc/init', appname + '.conf')
   source 'nodejs.upstart.conf.erb'
   mode '0644'
   variables(
-  :user => user,
-  :node_dir => '/usr/local',
-  :app_dir => basepath,
-  :entry => appname
+    user: user,
+    node_dir: '/usr/local',
+    app_dir: basepath,
+    entry: appname
   )
 end
 
 service appname do
   provider Chef::Provider::Service::Upstart
-  supports :restart => true, :start => true, :stop => true
+  supports restart: true, start: true, stop: true
   action [:restart]
 end

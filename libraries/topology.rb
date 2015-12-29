@@ -25,35 +25,33 @@ class Topo
     attr_reader :name
 
     # class method to get or create Topo instance
-    def self.get_topo(topo_name, blueprint_name = nil,
-      data_bag_name = 'topologies')
+    def self.get_topo(name, blueprint = nil,
+      data_bag = 'topologies')
 
-      unless @topos[topo_name]
-        @topos[topo_name] = load_from_bag(topo_name, data_bag_name)
+      unless @topos[name]
+        @topos[name] = load_from_bag(name, name, data_bag)
 
         # if specific topology doesnt exist, fallback to blueprint if specified
-        unless @topos[topo_name]
-          if blueprint_name
-            @topos[topo_name] = load_from_bag(blueprint_name, data_bag_name)
-          end
+        if !@topos[name] && blueprint
+          @topos[name] = load_from_bag(name, blueprint, data_bag)
         end
       end
 
-      @topos[topo_name]
+      @topos[name]
     end
 
-    def self.load_from_bag(topo_name, data_bag_name)
+    def self.load_from_bag(name, item, data_bag)
       begin
-        raw_data = Chef::DataBagItem.load(data_bag_name, topo_name)
-        topo = Topo::Topology.new(topo_name, raw_data.to_hash) if raw_data
+        raw_data = Chef::DataBagItem.load(data_bag, item)
+        topo = Topo::Topology.new(name, raw_data.to_hash) if raw_data
       rescue Net::HTTPServerException => e
         raise unless e.to_s =~ /^404/
       end
       topo
     end
 
-    def initialize(topo_name, raw_data)
-      @name = topo_name
+    def initialize(name, raw_data)
+      @name = name
       @raw_data = raw_data
       @nodes = []
       @chef_environment = @raw_data['chef_environment']

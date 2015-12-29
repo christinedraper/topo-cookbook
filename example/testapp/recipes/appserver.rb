@@ -5,4 +5,4 @@
 # Copyright 2015, ThirdWave Insights
 #
 
-include_recipe "nodejs::default"
+include_recipe 'nodejs::default'

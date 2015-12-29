@@ -6,6 +6,6 @@
 #
 #
 
-include_recipe "testapp::db"
-include_recipe "testapp::appserver"
-include_recipe "testapp::deploy"
+include_recipe 'testapp::db'
+include_recipe 'testapp::appserver'
+include_recipe 'testapp::deploy'

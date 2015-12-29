@@ -18,8 +18,8 @@
 require 'spec_helper'
 
 topo1 = {
-  'name' => 'test',
-  'id' => 'test',
+  'name' => 'test1',
+  'id' => 'test1',
   'nodes' => [
     {
       'name' => 'node1',
@@ -44,7 +44,7 @@ topo1 = {
 
 topo1_item =  Chef::DataBagItem.from_hash(topo1)
 
-topo2 = {
+blueprint = {
   'name' => 'test',
   'id' => 'test',
   'tags' => %w(tag1 tag2),
@@ -71,16 +71,16 @@ topo2 = {
     }
   ]
 }
-topo2_item =  Chef::DataBagItem.from_hash(topo2)
+blueprint_item =  Chef::DataBagItem.from_hash(blueprint)
 
 describe 'topo::setup_node' do
   context 'When topo and node name match' do
     let(:chef_run) do
       runner = ChefSpec::ServerRunner.new
-      runner.node.set['topo']['name'] = 'test'
+      runner.node.set['topo']['name'] = 'test1'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
-        'test').and_return(topo1_item)
+        'test1').and_return(topo1_item)
       runner.converge(described_recipe)
     end
 
@@ -88,7 +88,7 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'name' => 'test',  'node_type' => 'dbserver' },
+          'topo' => { 'name' => 'test1',  'node_type' => 'dbserver' },
           'testapp' => { 'version' => '0.1.1' },
           'tags' => ['tag3']
         },
@@ -112,7 +112,7 @@ describe 'topo::setup_node' do
         'test2').and_raise(exception_404)
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
-        'test').and_return(topo2_item)
+        'test').and_return(blueprint_item)
       runner.converge(described_recipe)
     end
 
@@ -120,7 +120,7 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'name' => 'test',  'node_type' => 'appserver' },
+          'topo' => { 'name' => 'test2',  'node_type' => 'appserver' },
           'testapp' => { 'version' => '0.1.3' },
           'tags' => %w(tag3 tag1 tag2)
         },
