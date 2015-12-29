@@ -1,0 +1,279 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Create an AWS instance as a Chef node configured from topology JSON in Chef Server",
+  "Parameters": {
+
+    "KeyName": {
+      "Description": "EC2 keypair to allow access to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "example_key",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+
+    "InstanceType": {
+      "Description": "Application Server EC2 instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro", "t2.small", "t2.medium", "t2.large"
+      ],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+
+    "Subnet": {
+      "Description": "Subnet where this instance is to be created",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+
+    "Environment": {
+      "Description": "Environment - e.g. test, production",
+      "Type": "String",
+      "Default": "test",
+      "AllowedValues": ["test", "production"],
+      "ConstraintDescription": "test or production"
+    },
+
+    "TopologyName": {
+      "Description": "Topology name",
+      "Type": "String",
+      "Default": "test1",
+      "AllowedPattern" : "[a-zA-Z0-9_\\-]*",
+      "ConstraintDescription": "alphanumeric, _ or -"
+    },
+        
+    "NodeType": {
+      "Description": "The purpose of the node to be created (node type in topology JSON)",
+      "Type": "String",
+      "Default": "appserver",
+      "AllowedValues": ["appserver", "dbserver"]
+    },
+    
+    "ChefServerUrl": {
+      "Description": "URL for Chef Server",
+      "Type": "String",
+      "Default": "https://api.opscode.com/organizations/myorg"
+    },
+    
+    "ClientValidationName": {
+      "Description": "Name of the Chef client validator",
+      "Type": "String",
+      "Default": "example-validator"
+    },
+    
+    "ValidationKeyUrl": {
+      "Description": "URL to retrieve client validation key (e.g. from private bucket)",
+      "Type": "String",
+      "Default": "https://s3-us-west-2.amazonaws.com/myorg-key-bucket/example-validator.pem"
+    }
+  },
+
+  "Mappings": {
+    "AWSRegionAMI": {
+      "us-west-2": {
+        "ami": "ami-95b9b5a5"
+      },
+      "us-east-1": {
+        "ami": "ami-7be63d10"
+      }
+    },
+    "EnvMapping": {
+      "test" : {
+        "iamrole": "test-server-role"
+      },
+      "production" : {
+        "iamrole": "prod-server-role"
+      }
+    }
+  },
+
+  "Resources": {
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" :  {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/etc/chef/validation.pem" : {
+                "source" : { "Ref": "ValidationKeyUrl" },
+                "mode"   : "000400",
+                "owner"  : "root",
+                "group"  : "root",
+                "authentication": "S3AccessCreds"
+              },
+              "/etc/chef/ohai/hints/ec2.json" : {
+                "content" : "{ }",
+                "mode"   : "000664",
+                "owner"  : "root",
+                "group"  : "root"
+              },
+              "/tmp/install.sh" : {
+                "source" : "https://www.opscode.com/chef/install.sh",
+                "mode"  : "000400",
+                "owner" : "root",
+                "group" : "root"
+              },
+              "/etc/chef/client.rb" : {
+                 "content" : { "Fn::Join": [ "", [
+					"log_location STDOUT \n",
+					"chef_server_url '",
+					{ "Ref": "ChefServerUrl" },
+					"'\nvalidation_client_name '",
+					{ "Ref": "ClientValidationName" },
+					"'\nnode_name '",
+                    {
+                      "Ref": "AWS::StackName"
+                    },
+                    "-",
+                    {
+                      "Ref": "Environment"
+                    },
+                    "' \n"
+                ]]},
+                "mode"   : "000644",
+                "owner"  : "root",
+                "group"  : "root"
+              },
+              "/etc/chef/firstboot.json" : {
+                "content" : { "Fn::Join": [ "", [
+                  "{ \"topo\": { \"name\": \"",
+                  { "Ref": "TopologyName" },
+                  "\",\n \"node_type\": \"",
+                  { "Ref": "NodeType" },
+                  "\",\n \"blueprint_name\": \"",
+                  { "Fn::Join": ["",[{ "Ref": "Environment" }, "_default"]] },
+                  "\"\n}}\n"
+                ]]},
+                "mode"   : "000644",
+                "owner"  : "root",
+                "group"  : "root"
+              }
+            },
+            "commands" : {
+              "01_install_chef" : {
+                "command" : "bash /tmp/install.sh -v 12.5.1"
+              },
+              "02_bootstrap_chef" : {
+                "command" : "chef-client -j /etc/chef/firstboot.json -o 'topo::setup_chef_cleanup,topo::setup_node'"
+              },
+              "03_run_configured_chef" : {
+                "command" : "chef-client"
+              }
+            }
+          }
+        },
+        "AWS::CloudFormation::Authentication" : {
+          "S3AccessCreds" : {
+            "type" : "S3",
+            "roleName" : {
+              "Fn::FindInMap": [ "EnvMapping", {
+                "Ref": "Environment"
+              }, "iamrole" ]
+            }
+          }
+        }
+      },
+      "Properties": {
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "IamInstanceProfile" : {
+          "Fn::FindInMap": [ "EnvMapping", {
+            "Ref": "Environment"
+          }, "iamrole" ]
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "ImageId": { "Fn::FindInMap": [
+          "AWSRegionAMI", {
+            "Ref": "AWS::Region"
+          },
+          "ami"
+        ]},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-",
+                  {
+                    "Ref": "Environment"
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref":  "Subnet"
+            },
+            "AssociatePublicIpAddress": "true"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash\n",
+              "echo cloud-init setup now running at $(date -R). | tee /root/output.txt\n",
+              "apt-get --assume-yes install python-setuptools\n",
+              "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+              "cfn-init --stack ", { "Ref" : "AWS::StackName" },
+              " --region ", { "Ref": "AWS::Region" },
+              " --resource server \n",
+              "cfn-signal -e $? ",
+              " --stack ", { "Ref" : "AWS::StackName" },
+              " --region ", { "Ref" : "AWS::Region" },
+              " --resource server \n"
+            ]]
+          }
+        }
+      },
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT20M"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "publicIp": {
+      "Value": {
+        "Fn::GetAtt": [
+          "server",
+          "PublicIp"
+        ]
+      }
+    },
+    "nodeName": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            {
+              "Ref": "AWS::StackName"
+            },
+            "-",
+            {
+              "Ref": "TopologyName"
+            }
+          ]
+        ]
+      }
+    },
+    "instanceId": {
+      "Value": {
+        "Ref": "server"
+      }
+    }
+  }
+}
