@@ -29,6 +29,8 @@ suites:
     data_bags_path: "test/integration/data_bags"
     run_list:
     - recipe[topo::setup_node]
+    - recipe[topo::setup_chef_cleanup]
+    - recipe[topo::run_chef_cleanup]
     attributes: { topo: { 
       name: 'test1', 
       node_type: 'appserver',

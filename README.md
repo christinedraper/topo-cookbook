@@ -7,7 +7,9 @@ to configure single or multi-node topologies.
 This can be useful in combination with CloudFormation or other 
 provisioning tools.
 
-#Usage
+The [source for this cookbook](https://github.com/christinedraper/topo-cookbook) is on Github.
+
+#setup_node recipe
 
 Upload a topology definition to the Chef Server using knife-topo:
 
@@ -41,14 +43,29 @@ environment, tags and attributes) based on the uploaded topology
 and either the node name or the node type; the second run will apply 
 that configuration.
 
+#setup_chef_cleanup recipe
+
+Use the 'setup_chef_cleanup' recipe to create a script that will invoke 
+the run_chef_cleanup recipe when the node is shutdown. 
+
+This recipe is platform-specific has only been tested on Ubuntu 14.04.
+
+#run_chef_cleanup recipe
+
+Use the 'run_chef_cleanup' recipe to delete the chef node and client from 
+the Chef server, and also delete the validation and client keys.
+
+To keep the validation key, set `node['topo']['delete_validation_key']` 
+to `never`.
+
 #Attributes
 
-* node['topo']['name'] - Name of the topology to be used to configure 
+* `node['topo']['name']` - Name of the topology to be used to configure 
 the node
-* node['topo']['node_type'] - If node.name is not found in the 
+* `node['topo']['node_type']` - If node.name is not found in the 
 topology, then this attribute will be used to find a match.
-* node['topo']['blueprint_name'] - If no topology data bag item matching
-node['topo']['name'] is found, then this attribute is used as an 
+* `node['topo']['blueprint_name']` - If no topology data bag item matching
+`node['topo']['name']` is found, then this attribute is used as an 
 alternative.
 
 # License 

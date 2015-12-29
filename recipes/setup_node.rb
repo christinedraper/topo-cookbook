@@ -66,6 +66,11 @@ if topo
       tags topo_node.tags if topo_node.tags
       attributes topo_node.attributes if topo_node.attributes
     end
+
+    file '/etc/chef/validation.pem' do
+      action :delete
+      only_if { node['topo']['delete_validation_key'] == 'setup' }
+    end
   else
     looked_for = "node #{node.name}"
     looked_for << " or node type '#{node_type}'" if node_type
@@ -73,7 +78,6 @@ if topo
       "Unable to find #{looked_for} in topology '#{topo.name}' \
  so cannot configure node")
   end
-
 else
   looked_for = "topology #{topo_name}"
   looked_for << " or blueprint '#{blueprint}'" if blueprint

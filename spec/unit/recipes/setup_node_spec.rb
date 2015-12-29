@@ -127,8 +127,12 @@ describe 'topo::setup_node' do
         'run_list' => ['recipe[apt]']
       )
     end
+
+    it 'does not delete validation key' do
+      expect(chef_run).not_to delete_file('/etc/chef/validation.pem')
+    end
   end
-  
+
   context 'When there is no matching data bag' do
     let(:response_404) { OpenStruct.new(code: '404') }
     let(:exception_404) do
@@ -149,7 +153,23 @@ describe 'topo::setup_node' do
     end
 
     it 'does not raise an error' do
-      expect{ chef_run  }.to_not raise_error
+      expect { chef_run }.to_not raise_error
+    end
+  end
+
+  context 'When delete_validation_key is setup' do
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new
+      runner.node.set['topo']['name'] = 'test'
+      runner.node.set['topo']['delete_validation_key'] = 'setup'
+      expect(Chef::DataBagItem).to receive(:load).with(
+        'topologies',
+        'test').and_return(topo1_item)
+      runner.converge(described_recipe)
+    end
+
+    it 'deletes validation key after setup' do
+      expect(chef_run).to delete_file('/etc/chef/validation.pem')
     end
   end
 end

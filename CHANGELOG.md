@@ -4,3 +4,8 @@
 
 * Do not raise error when no topology data bag is found
 * Set node attribute topo.name to the actual topology name, even if blueprint data bag is used 
+
+##v0.1.3 (2015-12-28)
+
+* Add recipes to cleanup the node, client and keys
+* Add an example CloudFormation template that uses the recipes
