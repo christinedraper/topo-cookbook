@@ -74,10 +74,15 @@ blueprint = {
 blueprint_item =  Chef::DataBagItem.from_hash(blueprint)
 
 describe 'topo::setup_node' do
+  let(:response_404) { OpenStruct.new(code: '404') }
+  let(:exception_404) do
+    Net::HTTPServerException.new('404 not found', response_404)
+  end
+  
   context 'When topo and node name match' do
     let(:chef_run) do
-      runner = ChefSpec::ServerRunner.new
-      runner.node.set['topo']['name'] = 'test1'
+      runner = ChefSpec::ServerRunner.new()
+      runner.node.override['topo']['name'] = 'test1'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
         'test1').and_return(topo1_item)
@@ -98,15 +103,11 @@ describe 'topo::setup_node' do
   end
 
   context 'When node type and blueprint matches' do
-    let(:response_404) { OpenStruct.new(code: '404') }
-    let(:exception_404) do
-      Net::HTTPServerException.new('404 not found', response_404)
-    end
     let(:chef_run) do
       runner = ChefSpec::ServerRunner.new
-      runner.node.set['topo']['name'] = 'test2'
-      runner.node.set['topo']['blueprint_name'] = 'test'
-      runner.node.set['topo']['node_type'] = 'appserver'
+      runner.node.override['topo']['name'] = 'test2'
+      runner.node.override['topo']['blueprint_name'] = 'test'
+      runner.node.override['topo']['node_type'] = 'appserver'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
         'test2').and_raise(exception_404)
@@ -132,6 +133,35 @@ describe 'topo::setup_node' do
       expect(chef_run).not_to delete_file('/etc/chef/validation.pem')
     end
   end
+  
+  
+  context 'When node type is specified in v2 format' do
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new
+      runner.node.override['topo']['name'] = 'test3'
+      runner.node.override['topo']['blueprint_name'] = 'test'
+      runner.node.override['topo']['node_type'] = 'dbserver'
+      allow(Chef::DataBagItem).to receive(:load).with(
+        'topologies',
+        'test3').and_raise(exception_404)
+      allow(Chef::DataBagItem).to receive(:load).with(
+        'topologies',
+        'test').and_return(blueprint_item)
+      runner.converge(described_recipe)
+    end
+
+    it 'sets node by type and topo' do
+      expect(chef_run).to create_chef_node('chefspec').with(
+        'chef_environment' => 'test',
+        'attributes' => {
+          'topo' => { 'name' => 'test3',  'node_type' => 'dbserver' },
+          'testapp' => { 'version' => '0.1.3' },
+          'tags' => %w(tag4 tag1 tag2)
+        },
+        'run_list' => ['recipe[db]']
+      )
+    end
+  end
 
   context 'When there is no matching data bag' do
     let(:response_404) { OpenStruct.new(code: '404') }
@@ -140,9 +170,9 @@ describe 'topo::setup_node' do
     end
     let(:chef_run) do
       runner = ChefSpec::ServerRunner.new
-      runner.node.set['topo']['name'] = 'test2'
-      runner.node.set['topo']['blueprint_name'] = 'test'
-      runner.node.set['topo']['node_type'] = 'appserver'
+      runner.node.override['topo']['name'] = 'test2'
+      runner.node.override['topo']['blueprint_name'] = 'test'
+      runner.node.override['topo']['node_type'] = 'appserver'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
         'test2').and_raise(exception_404)
@@ -160,8 +190,8 @@ describe 'topo::setup_node' do
   context 'When delete_validation_key is setup' do
     let(:chef_run) do
       runner = ChefSpec::ServerRunner.new
-      runner.node.set['topo']['name'] = 'test'
-      runner.node.set['topo']['delete_validation_key'] = 'setup'
+      runner.node.override['topo']['name'] = 'test'
+      runner.node.override['topo']['delete_validation_key'] = 'setup'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
         'test').and_return(topo1_item)
