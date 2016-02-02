@@ -24,25 +24,17 @@ class Topo
 
     def initialize(node_data)
       @name = node_data['name']
-      @attributes = node_data['attributes'] || node_data['normal'] || {}
-      @attributes['topo'] ||= {}
       @chef_environment = node_data['chef_environment']
       @run_list = node_data['run_list']
-      @node_type = node_type
-      @attributes['topo']['node_type'] ||= @node_type
-      @attributes['tags'] = node_data['tags'] if node_data['tags']
+      normalize_attributes(node_data)
     end
 
-    def node_type
-      type = @attributes['node_type']
-      unless type
-        if @attributes['topo']['node_type']
-          type = @attributes['topo']['node_type']
-        else
-          type = 'unspecified'
-        end
-      end
-      type
+    def normalize_attributes(node_data)
+      @attributes = node_data['attributes'] || node_data['normal'] || {}
+      @node_type = node_data['node_type'] || @attributes['topo']['node_type']
+      @attributes['topo'] ||= {}
+      @attributes['topo']['node_type'] ||= @node_type
+      @attributes['tags'] = node_data['tags'] if node_data['tags']
     end
   end
 end

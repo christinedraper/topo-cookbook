@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'topo::setup_node' do
   # Serverspec examples can be found at
   # http://serverspec.org/resource_types.html
-  context 'using blueprint' do
+  context 'using topology' do
     it 'converges using test1 topology' do
       # Not clear how to test this
       skip 'Should have set node name to server1.example.com'
@@ -20,7 +20,7 @@ describe 'topo::setup_chef_cleanup' do
       it { should be_file }
     end
 
-    describe link('/etc/rc0.d/K04chef-cleanup') do
+    describe file('/etc/rc0.d/K04chef-cleanup') do
       it { should be_symlink }
     end
   end

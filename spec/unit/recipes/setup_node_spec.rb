@@ -78,10 +78,10 @@ describe 'topo::setup_node' do
   let(:exception_404) do
     Net::HTTPServerException.new('404 not found', response_404)
   end
-  
+
   context 'When topo and node name match' do
     let(:chef_run) do
-      runner = ChefSpec::ServerRunner.new()
+      runner = ChefSpec::ServerRunner.new
       runner.node.override['topo']['name'] = 'test1'
       expect(Chef::DataBagItem).to receive(:load).with(
         'topologies',
@@ -133,8 +133,7 @@ describe 'topo::setup_node' do
       expect(chef_run).not_to delete_file('/etc/chef/validation.pem')
     end
   end
-  
-  
+
   context 'When node type is specified in v2 format' do
     let(:chef_run) do
       runner = ChefSpec::ServerRunner.new

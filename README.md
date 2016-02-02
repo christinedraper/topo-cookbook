@@ -56,7 +56,7 @@ Use the 'run_chef_cleanup' recipe to delete the chef node and client from
 the Chef server, and also delete the validation and client keys.
 
 To keep the validation key, set `node['topo']['delete_validation_key']` 
-to `never`.
+to 'never'. Other values are 'startup' and 'shutdown'.
 
 #Attributes
 

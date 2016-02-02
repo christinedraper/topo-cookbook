@@ -9,3 +9,7 @@
 
 * Add recipes to cleanup the node, client and keys
 * Add an example CloudFormation template that uses the recipes
+
+##v0.1.4 (2016-02-02)
+
+* Fix problem with look-up by node type

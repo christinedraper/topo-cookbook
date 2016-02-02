@@ -12,11 +12,18 @@
         "recipe[apt]",
         "recipe[testapp::appserver]",
         "testapp::deploy",
-        "blueprint-test"
+        "blueprint_test"
       ],
+      "node_type": "appserver",
       "normal": {
-        "topo": {
-          "node_type": "appserver"
+        "nodejs": {
+          "version": "0.10.28",
+          "checksum_linux_x64": "5f41f4a90861bddaea92addc5dfba5357de40962031c2281b1683277a0f75932"
+        },
+        "testapp": {
+          "version": "0.0.4",
+          "user": "ubuntu",
+          "path": "/var/opt"
         }
       }
     },
@@ -25,14 +32,15 @@
       "run_list": [
         "recipe[apt]",
         "recipe[testapp::db]",
-        "blueprint-test"
+        "blueprint_test"
       ],
       "tags": [
         "testapp_database"
       ],
+      "node_type": "dbserver",
       "normal": {
-        "topo": {
-          "node_type": "dbserver"
+        "mongodb": {
+          "package_version": "2.6.1"
         }
       }
     },
@@ -50,19 +58,9 @@
       "tags": [
 
       ],
+      "node_type": "buildserver",
       "normal": {
-        "topo": {
-          "node_type": "buildserver"
-        }
-      }
-    }
-  ],
-  "cookbook_attributes": [
-    {
-      "cookbook": "blueprint_test",
-      "filename": "topology",
-      "normal": {
-        "nodejs": {
+              "nodejs": {
           "version": "0.10.28",
           "checksum_linux_x64": "5f41f4a90861bddaea92addc5dfba5357de40962031c2281b1683277a0f75932"
         },
@@ -72,20 +70,9 @@
           "path": "/var/opt"
         },
         "mongodb": {
-          "package_version": "2.6.1"
+          "package_version": "2.5.1"
         }
-      },
-      "conditional": [
-        {
-          "qualifier": "node_type",
-          "value": "buildserver",
-          "normal": {
-            "mongodb": {
-              "package_version": "2.5.1"
-            }
-          }
-        }
-      ]
+      }
     }
   ]
 }
