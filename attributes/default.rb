@@ -10,3 +10,8 @@ default['topo']['node_type'] = 'default'
 
 # when to delete the validation key ('setup', 'shutdown', 'never')
 default['topo']['delete_validation_key'] = 'shutdown'
+
+# whether to refresh attributes from topology on each run
+default['topo']['refresh_attributes'] = false
+
+Topo::TopoHelper.refresh_attributes(node) if node['topo']['refresh_attributes']

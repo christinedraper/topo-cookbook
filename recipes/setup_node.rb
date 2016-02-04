@@ -75,8 +75,8 @@ if topo
     looked_for = "node #{node.name}"
     looked_for << " or node type '#{node_type}'" if node_type
     Chef::Log.warn(
-      "Unable to find #{looked_for} in topology '#{topo.name}' \
- so cannot configure node")
+      "Unable to find #{looked_for} in topology '#{topo.name}'" \
+      'so cannot configure node')
   end
 else
   looked_for = "topology #{topo_name}"

@@ -23,6 +23,7 @@ class Topo
     @topos = {}
 
     attr_reader :name
+    attr_accessor :blueprint
 
     # class method to get or create Topo instance
     def self.get_topo(name, blueprint = nil,
@@ -35,8 +36,11 @@ class Topo
         if !@topos[name] && blueprint
           @topos[name] = load_from_bag(name, blueprint, data_bag)
         end
+
+        return nil unless @topos[name]
       end
 
+      @topos[name].blueprint = blueprint if blueprint
       @topos[name]
     end
 
@@ -53,14 +57,17 @@ class Topo
     def initialize(name, raw_data)
       @name = name
       @raw_data = raw_data
-      @nodes = []
+      @raw_nodes = @raw_data['nodes'] || []
       @chef_environment = @raw_data['chef_environment']
       @tags = @raw_data['tags']
       @attributes = @raw_data['attributes'] || @raw_data['normal'] || {}
-      @raw_data['nodes'].each do |node_data|
-        node = Topo::Node.new(inflate(node_data))
-        @nodes << node
-      end if @raw_data['nodes']
+    end
+
+    def nodes
+      return @nodes if @nodes
+      @nodes = @raw_nodes.map do |node_data|
+        Topo::Node.new(inflate_node(node_data))
+      end
     end
 
     # recursive merge that retains all keys
@@ -77,7 +84,7 @@ class Topo
 
     # Expand each node in the JSON to contain a complete definition,
     # taking defaults from topology where not defined in the node json
-    def inflate(node_data)
+    def inflate_node(node_data)
       node_data['chef_environment'] ||= @chef_environment if @chef_environment
       node_data['attributes'] =  inflate_attrs(node_data)
       if @tags
@@ -91,6 +98,7 @@ class Topo
       attrs = node_data['attributes'] || node_data['normal'] || {}
       attrs['topo'] ||= {}
       attrs['topo']['name'] = @name
+      attrs['topo']['blueprint_name'] = @blueprint if @blueprint
       prop_merge(
         Marshal.load(Marshal.dump(@attributes)),
         attrs
@@ -98,13 +106,13 @@ class Topo
     end
 
     def get_node(name, type = nil)
-      node = @nodes.find do |n|
+      node = nodes.find do |n|
         n.name == name
       end
 
       if !node && type
         # if specific node doesn't exist, look for node of same type
-        node = @nodes.find do |n|
+        node = nodes.find do |n|
           n.node_type == type
         end
       end

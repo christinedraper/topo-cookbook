@@ -58,6 +58,10 @@ the Chef server, and also delete the validation and client keys.
 To keep the validation key, set `node['topo']['delete_validation_key']` 
 to 'never'. Other values are 'startup' and 'shutdown'.
 
+#refresh_attributes recipe
+
+Load attributes from topology data bag on each run.
+
 #Attributes
 
 * `node['topo']['name']` - Name of the topology to be used to configure 
@@ -67,12 +71,20 @@ topology, then this attribute will be used to find a match.
 * `node['topo']['blueprint_name']` - If no topology data bag item matching
 `node['topo']['name']` is found, then this attribute is used as an 
 alternative.
+* `node['topo']['refresh_attributes']` - If true, load attributes
+from topology data bag on each chef run. Defaults to false.
+
+# Example 
+
+The [example](example) provides a Cloud Formation template that uses the topo cookbook
+and knife topo to setup a nodejs application. My blog provides a
+ [detailed walkthrough](https://christinemdraper.wordpress.com/2015/12/29/deploying-a-multi-node-application-using-cloudformation-and-chef/) of the example.
 
 # License 
 
 Author:: Christine Draper (christine_draper@thirdwaveinsights.com)
 
-Copyright:: Copyright (c) 2015 ThirdWave Insights, LLC
+Copyright:: Copyright (c) 2015-2016 ThirdWave Insights, LLC
 
 License:: Apache License, Version 2.0
 

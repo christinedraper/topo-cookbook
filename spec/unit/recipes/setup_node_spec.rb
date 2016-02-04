@@ -121,7 +121,11 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'name' => 'test2',  'node_type' => 'appserver' },
+          'topo' => {
+            'name' => 'test2',
+            'node_type' => 'appserver',
+            'blueprint_name' => 'test'
+          },
           'testapp' => { 'version' => '0.1.3' },
           'tags' => %w(tag3 tag1 tag2)
         },
@@ -153,7 +157,11 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'name' => 'test3',  'node_type' => 'dbserver' },
+          'topo' => {
+            'name' => 'test3',
+            'node_type' => 'dbserver',
+            'blueprint_name' => 'test'
+          },
           'testapp' => { 'version' => '0.1.3' },
           'tags' => %w(tag4 tag1 tag2)
         },

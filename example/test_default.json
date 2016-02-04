@@ -4,14 +4,16 @@
   "tags": [ "test" ],
   "nodes": [{
     "name": "appserver01",
+    "node_type": "appserver",
     "run_list": [
+      "topo::refresh_attributes",
       "recipe[apt]",
       "recipe[testapp::appserver]",
       "testapp::deploy"
     ],
     "attributes": {
       "topo": {
-        "node_type": "appserver"
+        "refresh_attributes": true
       },
       "testapp": {
         "user": "ubuntu",
@@ -21,7 +23,9 @@
   },
   {
     "name": "dbserver01",
+    "node_type": "dbserver",
     "run_list": [
+      "topo::refresh_attributes",
       "recipe[apt]",
       "recipe[testapp::db]"
     ],
@@ -30,7 +34,7 @@
     ],
     "attributes": {
       "topo": {
-        "node_type": "dbserver"
+        "refresh_attributes": true
       }
     }
   }]
