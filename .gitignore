@@ -16,3 +16,4 @@ bin/*
 .kitchen.local.yml
 
 test/system
+data_bags

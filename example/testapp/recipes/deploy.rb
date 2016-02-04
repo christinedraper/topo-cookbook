@@ -11,6 +11,8 @@ appname = node['testapp']['appname']
 basepath = node['testapp']['path']
 fullpath = ::File.join(basepath, appname)
 
+user user
+
 directory fullpath do
   owner user
   group user
@@ -33,9 +35,12 @@ cookbook_file ::File.join(fullpath, 'index.html') do
   owner user
 end
 
-execute 'install_testapp' do
-  # Need to run in login shell to pick up $HOME
-  command "su -l -c 'cd #{fullpath} && npm install' #{user}"
+nodejs_npm 'testapp' do
+  path fullpath
+  user user
+  json true
+  # user may not have a home dir, so we have to specify a cache
+  options ['--cache=./npm']
 end
 
 template 'testapp.upstart.conf' do
