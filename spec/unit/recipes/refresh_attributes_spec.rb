@@ -31,7 +31,7 @@ topo1 = {
   ]
 }
 
-topo1_item =  Chef::DataBagItem.from_hash(topo1)
+topo1_item = Chef::DataBagItem.from_hash(topo1)
 
 describe 'topo::refresh_attributes' do
   let(:response_404) { OpenStruct.new(code: '404') }

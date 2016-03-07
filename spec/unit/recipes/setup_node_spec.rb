@@ -42,7 +42,7 @@ topo1 = {
   ]
 }
 
-topo1_item =  Chef::DataBagItem.from_hash(topo1)
+topo1_item = Chef::DataBagItem.from_hash(topo1)
 
 blueprint = {
   'name' => 'test',
@@ -71,7 +71,7 @@ blueprint = {
     }
   ]
 }
-blueprint_item =  Chef::DataBagItem.from_hash(blueprint)
+blueprint_item = Chef::DataBagItem.from_hash(blueprint)
 
 describe 'topo::setup_node' do
   let(:response_404) { OpenStruct.new(code: '404') }
@@ -93,7 +93,7 @@ describe 'topo::setup_node' do
       expect(chef_run).to create_chef_node('chefspec').with(
         'chef_environment' => 'test',
         'attributes' => {
-          'topo' => { 'name' => 'test1',  'node_type' => 'dbserver' },
+          'topo' => { 'name' => 'test1', 'node_type' => 'dbserver' },
           'testapp' => { 'version' => '0.1.1' },
           'tags' => ['tag3']
         },

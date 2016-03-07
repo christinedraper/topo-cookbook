@@ -26,9 +26,7 @@ class Topo
     attr_accessor :blueprint
 
     # class method to get or create Topo instance
-    def self.get_topo(name, blueprint = nil,
-      data_bag = 'topologies')
-
+    def self.get_topo(name, blueprint = nil, data_bag = 'topologies')
       unless @topos[name]
         @topos[name] = load_from_bag(name, name, data_bag)
 
@@ -86,7 +84,7 @@ class Topo
     # taking defaults from topology where not defined in the node json
     def inflate_node(node_data)
       node_data['chef_environment'] ||= @chef_environment if @chef_environment
-      node_data['attributes'] =  inflate_attrs(node_data)
+      node_data['attributes'] = inflate_attrs(node_data)
       if @tags
         node_data['tags'] ||= []
         node_data['tags'] |= @tags

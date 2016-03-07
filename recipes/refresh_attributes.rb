@@ -32,5 +32,5 @@
 # to ensure the node is configured the way you want.
 
 unless node['topo']['refresh_attributes']
-  fail("Set node['topo']['refresh_attributes'] to true")
+  raise("Set node['topo']['refresh_attributes'] to true")
 end
