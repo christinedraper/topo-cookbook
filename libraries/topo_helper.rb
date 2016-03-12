@@ -24,7 +24,7 @@ class Topo
       topo = get_topo(node['topo']['name'], node['topo']['blueprint_name'])
 
       if topo
-        unless merge_attrs(node, node_type, topo)
+        unless set_attrs(node, node_type, topo)
           Chef::Log.warn(
             "Unable to find node '#{node.name}' or node_type " \
             "'#{node_type || 'undefined'}' so cannot get attributes for node")
@@ -42,12 +42,11 @@ class Topo
       topo
     end
 
-    def self.merge_attrs(node, node_type, topo)
+    def self.set_attrs(node, node_type, topo)
       topo_node = topo.get_node(node.name, node_type)
       return false unless topo_node
       return false unless topo_node.attributes
-      node.normal = Chef::Mixin::DeepMerge.merge(
-        node.normal, topo_node.attributes)
+      node.normal = topo_node.attributes
       Chef::Log.info(
         "Updated attributes for node using topology '#{topo.name}'")
       true

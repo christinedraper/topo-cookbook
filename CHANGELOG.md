@@ -18,3 +18,7 @@
 
 * Add option to refresh attributes from topology data bag on each run.
 * Store `blueprint_name` in normal node attribute, so can rerun `topo::setup_node`
+
+##v0.1.6 (2016-03-12)
+
+* Refresh attributes sets attributes rather than merging them, consistent with setup_node.

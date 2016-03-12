@@ -36,5 +36,14 @@ class Topo
       @attributes['topo']['node_type'] ||= @node_type
       @attributes['tags'] = node_data['tags'] if node_data['tags']
     end
+    
+    def set_or_merge_attrs(attrs, merge=false)
+      if merge
+        node.normal = Chef::Mixin::DeepMerge.merge(
+          node.normal, attrs)
+      else
+        node.normal = attrs
+      end
+    end
   end
 end
